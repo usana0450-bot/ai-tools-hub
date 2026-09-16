@@ -246,6 +246,7 @@
             z-index: 200;
             padding: 20px;
             flex-direction: column;
+            overflow-y: auto;
         }
 
         .modal.active {
@@ -298,11 +299,17 @@
             border-radius: 8px;
             padding: 15px;
             text-align: center;
-            min-height: 150px;
+            min-height: 200px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
+        }
+
+        .result-box img {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-top: 10px;
         }
 
         /* Toast Notifications */
@@ -371,15 +378,15 @@
 
         <h3 style="margin-bottom: 12px; font-size: 16px;">Quick Access Tools</h3>
         <div class="grid">
-            <div class="card" onclick="openTool('bg-remover')">
-                <div class="card-icon">🖼️</div>
-                <div class="card-title">BG Remover</div>
-                <div class="card-cost">1 Credit</div>
-                <button class="btn">Use Tool</button>
-            </div>
             <div class="card" onclick="openTool('img-gen')">
                 <div class="card-icon">🎨</div>
                 <div class="card-title">AI Generator</div>
+                <div class="card-cost">1 Credit</div>
+                <button class="btn">Use Tool</button>
+            </div>
+            <div class="card" onclick="openTool('bg-remover')">
+                <div class="card-icon">🖼️</div>
+                <div class="card-title">BG Remover</div>
                 <div class="card-cost">1 Credit</div>
                 <button class="btn">Use Tool</button>
             </div>
@@ -390,31 +397,17 @@
     <div id="view-tools" class="view">
         <h3 style="margin-bottom: 12px; font-size: 16px;">All AI Tools</h3>
         <div class="grid">
+            <div class="card" onclick="openTool('img-gen')">
+                <div class="card-icon">🎨</div>
+                <div class="card-title">AI Generator</div>
+                <div class="card-desc">Create real AI image from text</div>
+                <div class="card-cost">1 Credit</div>
+                <button class="btn">Open</button>
+            </div>
             <div class="card" onclick="openTool('bg-remover')">
                 <div class="card-icon">🖼️</div>
                 <div class="card-title">BG Remover</div>
                 <div class="card-desc">Remove background automatically</div>
-                <div class="card-cost">1 Credit</div>
-                <button class="btn">Open</button>
-            </div>
-            <div class="card" onclick="openTool('img-gen')">
-                <div class="card-icon">🎨</div>
-                <div class="card-title">AI Generator</div>
-                <div class="card-desc">Create image from text prompt</div>
-                <div class="card-cost">1 Credit</div>
-                <button class="btn">Open</button>
-            </div>
-            <div class="card" onclick="openTool('quality-booster')">
-                <div class="card-icon">✨</div>
-                <div class="card-title">Enhancer</div>
-                <div class="card-desc">Enhance photo resolution</div>
-                <div class="card-cost">1 Credit</div>
-                <button class="btn">Open</button>
-            </div>
-            <div class="card" onclick="openTool('obj-remover')">
-                <div class="card-icon">🧽</div>
-                <div class="card-title">Object Remover</div>
-                <div class="card-desc">Erase unwanted items</div>
                 <div class="card-cost">1 Credit</div>
                 <button class="btn">Open</button>
             </div>
@@ -511,18 +504,6 @@
 
         let user = JSON.parse(localStorage.getItem('ai_hub_user')) || defaultUser;
 
-        function checkReferral() {
-            const startParam = tg?.initDataUnsafe?.start_param;
-            const hasBeenReferred = localStorage.getItem('referred_processed');
-            
-            if (startParam && startParam.startsWith('ref_') && !hasBeenReferred) {
-                user.credits += 3;
-                localStorage.setItem('referred_processed', 'true');
-                showToast("🎁 +3 Welcome Bonus credits applied from Referral!");
-                saveUserData();
-            }
-        }
-
         function saveUserData() {
             localStorage.setItem('ai_hub_user', JSON.stringify(user));
             updateUI();
@@ -542,13 +523,12 @@
                 avatarEl.innerText = user.name.charAt(0).toUpperCase();
             }
 
-            const botUsername = 'YourAIToolBot'; // Apne Telegram Bot Ka Username Yahan Likhien
+            const botUsername = 'YourAIToolBot'; // Apne Bot Ka Username Likhien
             document.getElementById('ref-link').value = `https://t.me/${botUsername}?start=ref_${user.id}`;
 
             checkDailyStatus();
         }
 
-        // --- Toast Notification ---
         function showToast(msg) {
             const toast = document.getElementById('toast');
             toast.innerText = msg;
@@ -556,7 +536,6 @@
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // --- Navigation ---
         function switchTab(tabName, el) {
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -565,7 +544,6 @@
             el.classList.add('active');
         }
 
-        // --- Daily Reward Logic ---
         function checkDailyStatus() {
             const btn = document.getElementById('btn-daily');
             const timerEl = document.getElementById('checkin-timer');
@@ -594,15 +572,12 @@
                 user.credits += 3;
                 user.lastCheckin = now;
                 saveUserData();
-                showToast("🎉 Successfully claimed +3 Daily Credits!");
+                showToast("🎉 Claimed +3 Daily Credits!");
             }
         }
 
-        // --- Rewarded Ad Integration ---
         function showRewardedAd() {
             showToast("⏳ Loading Ad...");
-
-            // Monetag Ad Code Call Integration:
             setTimeout(() => {
                 user.credits += 2;
                 saveUserData();
@@ -610,21 +585,17 @@
             }, 2000);
         }
 
-        // --- Referral Copy ---
         function copyReferralLink() {
             const input = document.getElementById('ref-link');
             input.select();
-            input.setSelectionRange(0, 99999);
             navigator.clipboard.writeText(input.value);
-            showToast("📋 Referral Link copied to clipboard!");
+            showToast("📋 Referral Link copied!");
         }
 
-        // --- Tools Engine & Deduction ---
+        // --- Tools Logic (Real Image Generation) ---
         const toolConfigs = {
-            'bg-remover': { name: 'Background Remover', type: 'file' },
             'img-gen': { name: 'AI Image Generator', type: 'text' },
-            'quality-booster': { name: 'Photo Enhancer', type: 'file' },
-            'obj-remover': { name: 'Object Remover', type: 'file' }
+            'bg-remover': { name: 'Background Remover', type: 'file' }
         };
 
         let activeTool = null;
@@ -645,8 +616,8 @@
             } else {
                 contentHTML = `
                     <div class="input-group">
-                        <label>Enter Prompt</label>
-                        <input type="text" id="tool-input-text" placeholder="e.g. A futuristic city at sunset...">
+                        <label>Enter Prompt (in English)</label>
+                        <input type="text" id="tool-input-text" placeholder="e.g. Cute cat wearing sunglasses in space">
                     </div>
                 `;
             }
@@ -673,22 +644,63 @@
             }
 
             const resultBox = document.getElementById('result-box');
-            resultBox.innerHTML = `⏳ Processing with AI...`;
 
-            user.credits -= 1;
-            saveUserData();
+            if (activeTool === 'img-gen') {
+                const promptInput = document.getElementById('tool-input-text').value.trim();
+                if (!promptInput) {
+                    showToast("⚠️ Please enter a text prompt first!");
+                    return;
+                }
 
-            setTimeout(() => {
-                resultBox.innerHTML = `
-                    <div style="color: var(--success-color); margin-bottom: 8px;">✨ Success!</div>
-                    <img src="https://via.placeholder.com/250x150/232e3c/ffffff?text=AI+Result+Demo" style="max-width:100%; border-radius:8px;" />
-                `;
-                showToast("✅ Processing complete! 1 credit used.");
-            }, 2500);
+                // Deduct Credit
+                user.credits -= 1;
+                saveUserData();
+
+                resultBox.innerHTML = `⏳ AI is generating your image, please wait...`;
+
+                // Real AI Image API Call via Pollinations AI
+                const encodedPrompt = encodeURIComponent(promptInput);
+                const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=512&height=512&seed=${Math.floor(Math.random() * 100000)}&nologo=true`;
+
+                const img = new Image();
+                img.src = imageUrl;
+                img.onload = () => {
+                    resultBox.innerHTML = `
+                        <div style="color: var(--success-color); margin-bottom: 8px;">✨ Generated Successfully!</div>
+                        <img src="${imageUrl}" alt="AI Result" />
+                        <a href="${imageUrl}" target="_blank" download="ai-image.jpg" class="btn" style="margin-top:10px; text-decoration:none;">📥 Download Image</a>
+                    `;
+                    showToast("✅ Image generated successfully!");
+                };
+                img.onerror = () => {
+                    resultBox.innerHTML = `❌ Failed to generate image. Try again.`;
+                    user.credits += 1; // Refund credit on failure
+                    saveUserData();
+                };
+
+            } else {
+                // Background Remover Mockup (Demo)
+                const fileInput = document.getElementById('tool-input-file');
+                if (!fileInput.files.length) {
+                    showToast("⚠️ Please select an image file first!");
+                    return;
+                }
+
+                user.credits -= 1;
+                saveUserData();
+
+                resultBox.innerHTML = `⏳ Processing image...`;
+                setTimeout(() => {
+                    resultBox.innerHTML = `
+                        <div style="color: var(--success-color); margin-bottom: 8px;">✨ Processing Complete!</div>
+                        <p style="font-size:12px; color:var(--hint-color);">Background Remover API connection required for live file processing.</p>
+                    `;
+                    showToast("✅ Done! 1 credit used.");
+                }, 2000);
+            }
         }
 
-        // --- App Boot Init ---
-        checkReferral();
+        // App Boot
         updateUI();
         setInterval(checkDailyStatus, 60000);
     </script>
