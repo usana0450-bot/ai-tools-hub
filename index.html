@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI Tools Hub</title>
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: var(--tg-theme-bg-color, #17212b);
+            --secondary-bg-color: var(--tg-theme-secondary-bg-color, #232e3c);
+            --text-color: var(--tg-theme-text-color, #ffffff);
+            --hint-color: var(--tg-theme-hint-color, #708499);
+            --button-color: var(--tg-theme-button-color, #5288c1);
+            --button-text-color: var(--tg-theme-button-text-color, #ffffff);
+            --accent-color: #64b5f6;
+            --card-bg: #1e2c3a;
+            --success-color: #4caf50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 70px;
+        }
+
+        /* Top Bar & Credit Badge */
+        header {
+            background-color: var(--secondary-bg-color);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--button-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .credit-badge {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 2px 5px rgba(245, 124, 0, 0.3);
+        }
+
+        /* Views */
+        .view {
+            display: none;
+            padding: 16px;
+            flex: 1;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Hero Banner */
+        .banner {
+            background: linear-gradient(135deg, #2b5278, #1e2c3a);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .banner h2 {
+            font-size: 18px;
+            margin-bottom: 6px;
+        }
+
+        .banner p {
+            color: var(--hint-color);
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--button-color);
+            color: var(--button-text-color);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-ad {
+            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            margin-top: 10px;
+        }
+
+        /* Tools Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .card-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .card-desc {
+            font-size: 11px;
+            color: var(--hint-color);
+            margin-bottom: 10px;
+        }
+
+        .card-cost {
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            color: var(--accent-color);
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background-color: var(--secondary-bg-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--hint-color);
+            text-decoration: none;
+            font-size: 11px;
+            gap: 4px;
+            cursor: pointer;
+            width: 25%;
+        }
+
+        .nav-item.active {
+            color: var(--accent-color);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+        }
+
+        /* Modal / Tool Interface */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-color);
+            z-index: 200;
+            padding: 20px;
+            flex-direction: column;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .tool-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            color: var(--hint-color);
+        }
+
+        input[type="text"], input[type="file"] {
+            background-color: var(--secondary-bg-color);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .result-box {
+            margin-top: 15px;
+            background-color: var(--secondary-bg-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #323232;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            z-index: 300;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            max-width: 80%;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        /* Stats Card */
+        .stat-card {
+            background-color: var(--secondary-bg-color);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="user-info">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <div class="user-name" id="user-name">User</div>
+        </div>
+        <div class="credit-badge">
+            ⚡ <span id="credit-count">0</span> Credits
+        </div>
+    </header>
+
+    <!-- Home View -->
+    <div id="view-home" class="view active">
+        <div class="banner">
+            <h2>🎁 Daily Check-in</h2>
+            <p>Claim free 3 credits every 24 hours!</p>
+            <button class="btn btn-success" id="btn-daily" onclick="claimDailyReward()">Claim +3 Credits</button>
+            <div id="checkin-timer" style="font-size:12px; color:var(--hint-color); margin-top:8px;"></div>
+        </div>
+
+        <div class="banner" style="background: linear-gradient(135deg, #4a148c, #1e2c3a);">
+            <h2>🎬 Need Extra Credits?</h2>
+            <p>Watch a quick sponsored ad to earn 2 credits immediately.</p>
+            <button class="btn btn-ad" onclick="showRewardedAd()">📺 Watch Ad (+2 Credits)</button>
+        </div>
+
+        <h3 style="margin-bottom: 12px; font-size: 16px;">Quick Access Tools</h3>
+        <div class="grid">
+            <div class="card" onclick="openTool('bg-remover')">
+                <div class="card-icon">🖼️</div>
+                <div class="card-title">BG Remover</div>
+                <div class="card-cost">1 Credit</div>
+                <button class="btn">Use Tool</button>
+            </div>
+            <div class="card" onclick="openTool('img-gen')">
+                <div class="card-icon">🎨</div>
+                <div class="card-title">AI Generator</div>
+                <div class="card-cost">1 Credit</div>
+                <button class="btn">Use Tool</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tools View -->
+    <div id="view-tools" class="view">
+        <h3 style="margin-bottom: 12px; font-size: 16px;">All AI Tools</h3>
+        <div class="grid">
+            <div class="card" onclick="openTool('bg-remover')">
+                <div class="card-icon">🖼️</div>
+                <div class="card-title">BG Remover</div>
+                <div class="card-desc">Remove background automatically</div>
+                <div class="card-cost">1 Credit</div>
+                <button class="btn">Open</button>
+            </div>
+            <div class="card" onclick="openTool('img-gen')">
+                <div class="card-icon">🎨</div>
+                <div class="card-title">AI Generator</div>
+                <div class="card-desc">Create image from text prompt</div>
+                <div class="card-cost">1 Credit</div>
+                <button class="btn">Open</button>
+            </div>
+            <div class="card" onclick="openTool('quality-booster')">
+                <div class="card-icon">✨</div>
+                <div class="card-title">Enhancer</div>
+                <div class="card-desc">Enhance photo resolution</div>
+                <div class="card-cost">1 Credit</div>
+                <button class="btn">Open</button>
+            </div>
+            <div class="card" onclick="openTool('obj-remover')">
+                <div class="card-icon">🧽</div>
+                <div class="card-title">Object Remover</div>
+                <div class="card-desc">Erase unwanted items</div>
+                <div class="card-cost">1 Credit</div>
+                <button class="btn">Open</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Refer View -->
+    <div id="view-refer" class="view">
+        <div class="banner">
+            <h2>👥 Invite Friends</h2>
+            <p>Earn 3 free credits for every friend who joins using your unique link!</p>
+        </div>
+
+        <div class="stat-card">
+            <span>Total Referred:</span>
+            <strong id="ref-count" style="color: var(--accent-color); font-size: 18px;">0</strong>
+        </div>
+
+        <div class="input-group" style="margin-top: 15px;">
+            <label>Your Referral Link</label>
+            <input type="text" id="ref-link" readonly value="https://t.me/YourBot?start=ref_id">
+        </div>
+
+        <button class="btn btn-success" style="margin-top: 15px;" onclick="copyReferralLink()">📋 Copy Link</button>
+    </div>
+
+    <!-- Profile View -->
+    <div id="view-profile" class="view">
+        <div class="stat-card">
+            <span>User ID:</span>
+            <span id="profile-id" style="color: var(--hint-color);">12345678</span>
+        </div>
+        <div class="stat-card">
+            <span>Available Credits:</span>
+            <span id="profile-credits" style="color: var(--accent-color); font-weight: bold;">0</span>
+        </div>
+        <div class="stat-card">
+            <span>Account Status:</span>
+            <span style="color: var(--success-color);">Active Member</span>
+        </div>
+    </div>
+
+    <!-- Tool Running Modal Interface -->
+    <div class="modal" id="tool-modal">
+        <div class="modal-header">
+            <h3 id="modal-title">AI Tool</h3>
+            <span class="modal-close" onclick="closeTool()">&times;</span>
+        </div>
+        <div class="tool-area" id="modal-content">
+            <!-- Dynamic Tool Content Controls -->
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('home', this)">
+            <div class="nav-icon">🏠</div>
+            <div>Home</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('tools', this)">
+            <div class="nav-icon">⚡</div>
+            <div>Tools</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('refer', this)">
+            <div class="nav-icon">🎁</div>
+            <div>Earn</div>
+        </div>
+        <div class="nav-item" onclick="switchTab('profile', this)">
+            <div class="nav-icon">👤</div>
+            <div>Profile</div>
+        </div>
+    </div>
+
+    <!-- Toast Component -->
+    <div class="toast" id="toast">Message here</div>
+
+    <script>
+        // --- Telegram WebApp Initialization ---
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand();
+            tg.ready();
+        }
+
+        // --- User State Management ---
+        const defaultUser = {
+            id: tg?.initDataUnsafe?.user?.id || 'demo_user_123',
+            name: tg?.initDataUnsafe?.user?.first_name || 'Guest User',
+            photo: tg?.initDataUnsafe?.user?.photo_url || null,
+            credits: 5,
+            lastCheckin: 0,
+            referredCount: 0
+        };
+
+        let user = JSON.parse(localStorage.getItem('ai_hub_user')) || defaultUser;
+
+        // Check if referral link parameter was passed inside start app
+        function checkReferral() {
+            const startParam = tg?.initDataUnsafe?.start_param;
+            const hasBeenReferred = localStorage.getItem('referred_processed');
+            
+            if (startParam && startParam.startsWith('ref_') && !hasBeenReferred) {
+                // Earn referral reward for new user
+                user.credits += 3;
+                localStorage.setItem('referred_processed', 'true');
+                showToast("🎁 +3 Welcome Bonus credits applied from Referral!");
+                saveUserData();
+            }
+        }
+
+        function saveUserData() {
+            localStorage.setItem('ai_hub_user', JSON.stringify(user));
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('credit-count').innerText = user.credits;
+            document.getElementById('profile-credits').innerText = user.credits;
+            document.getElementById('user-name').innerText = user.name;
+            document.getElementById('profile-id').innerText = user.id;
+            document.getElementById('ref-count').innerText = user.referredCount;
+            
+            const avatarEl = document.getElementById('user-avatar');
+            if (user.photo) {
+                avatarEl.innerHTML = `<img src="${user.photo}" />`;
+            } else {
+                avatarEl.innerText = user.name.charAt(0).toUpperCase();
+            }
+
+            // Set Referral Link (Update bot username here)
+            const botUsername = 'YourAIToolBot'; // CHANGE THIS TO YOUR BOT USERNAME
+            document.getElementById('ref-link').value = `https://t.me/${botUsername}?start=ref_${user.id}`;
+
+            checkDailyStatus();
+        }
+
+        // --- Toast Notification ---
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // --- Navigation ---
+        function switchTab(tabName, el) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById(`view-${tabName}`).classList.add('active');
+            el.classList.add('active');
+        }
+
+        // --- Daily Reward Logic ---
+        function checkDailyStatus() {
+            const btn = document.getElementById('btn-daily');
+            const timerEl = document.getElementById('checkin-timer');
+            const now = Date.now();
+            const oneDay = 24 * 60 * 60 * 1000;
+            const timePassed = now - user.lastCheckin;
+
+            if (timePassed < oneDay) {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                const remaining = oneDay - timePassed;
+                const hours = Math.floor(remaining / (1000 * 60 * 60));
+                const mins = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                timerEl.innerText = `Next claim in: ${hours}h ${mins}m`;
+            } else {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                timerEl.innerText = 'Available now!';
+            }
+        }
+
+        function claimDailyReward() {
+            const now = Date.now();
+            const oneDay = 24 * 60 * 60 * 1000;
+            if (now - user.lastCheckin >= oneDay) {
+                user.credits += 3;
+                user.lastCheckin = now;
+                saveUserData();
+                showToast("🎉 Successfully claimed +3 Daily Credits!");
+            }
+        }
+
+        // --- Rewarded Ad Integration (Monetag Ready) ---
+        function showRewardedAd() {
+            showToast("⏳ Loading Ad...");
+
+            // ============================================================
+            // MONETAG REWARDED AD INTEGRATION STARTS HERE
+            // Place your Monetag SDK Script inside head tag, then call:
+            // 
+            // show_8888888().then(() => {
+            //     // Ad watched successfully
+            //     user.credits += 2;
+            //     saveUserData();
+            //     showToast("✅ Ad watched! +2 Credits added.");
+            // }).catch(() => {
+            //     showToast("❌ Failed to complete Ad.");
+            // });
+            // ============================================================
+
+            // Temporary Simulation for testing setup without dynamic ad tag:
+            setTimeout(() => {
+                user.credits += 2;
+                saveUserData();
+                showToast("✅ Ad watched! +2 Credits added.");
+            }, 2000);
+        }
+
+        // --- Referral Copy ---
+        function copyReferralLink() {
+            const input = document.getElementById('ref-link');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(input.value);
+            showToast("📋 Referral Link copied to clipboard!");
+        }
+
+        // --- Tools Engine & Deduction ---
+        const toolConfigs = {
+            'bg-remover': { name: 'Background Remover', type: 'file' },
+            'img-gen': { name: 'AI Image Generator', type: 'text' },
+            'quality-booster': { name: 'Photo Enhancer', type: 'file' },
+            'obj-remover': { name: 'Object Remover', type: 'file' }
+        };
+
+        let activeTool = null;
+
+        function openTool(toolKey) {
+            activeTool = toolKey;
+            const config = toolConfigs[toolKey];
+            document.getElementById('modal-title').innerText = config.name;
+            
+            let contentHTML = '';
+            if (config.type === 'file') {
+                contentHTML = `
+                    <div class="input-group">
+                        <label>Upload Image</label>
+                        <input type="file" id="tool-input-file" accept="image/*">
+                    </div>
+                `;
+            } else {
+                contentHTML = `
+                    <div class="input-group">
+                        <label>Enter Prompt</label>
+                        <input type="text" id="tool-input-text" placeholder="e.g. A futuristic city at sunset...">
+                    </div>
+                `;
+            }
+
+            contentHTML += `
+                <button class="btn btn-success" style="margin-top:10px;" onclick="processTool()">Generate (1 Credit)</button>
+                <div class="result-box" id="result-box">
+                    <span style="color:var(--hint-color); font-size: 13px;">Result output will appear here</span>
+                </div>
+            `;
+
+            document.getElementById('modal-content').innerHTML = contentHTML;
+            document.getElementById('tool-modal').classList.add('active');
+        }
+
+        function closeTool() {
+            document.getElementById('tool-modal').classList.remove('active');
+        }
+
+        function processTool() {
+            if (user.credits < 1) {
+                showToast("❌ Not enough credits! Watch an ad or claim daily reward.");
+                return;
+            }
+
+            const resultBox = document.getElementById('result-box');
+            resultBox.innerHTML = `⏳ Processing with AI...`;
+
+            // Deduct Credit
+            user.credits -= 1;
+            saveUserData();
+
+            // Simulate AI Delay & API Processing
+            setTimeout(() => {
+                resultBox.innerHTML = `
+                    <div style="color: var(--success-color); margin-bottom: 8px;">✨ Success!</div>
+                    <img src="https://via.placeholder.com/250x150/232e3c/ffffff?text=AI+Result+Demo" style="max-width:100%; border-radius:8px;" />
+                `;
+                showToast("✅ Processing complete! 1 credit used.");
+            }, 2500);
+        }
+
+        // --- App Boot Init ---
+        checkReferral();
+        updateUI();
+        setInterval(checkDailyStatus, 60000); // Check daily timer dynamic update
+    </script>
+</body>
+</html>
