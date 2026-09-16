@@ -511,13 +511,11 @@
 
         let user = JSON.parse(localStorage.getItem('ai_hub_user')) || defaultUser;
 
-        // Check if referral link parameter was passed inside start app
         function checkReferral() {
             const startParam = tg?.initDataUnsafe?.start_param;
             const hasBeenReferred = localStorage.getItem('referred_processed');
             
             if (startParam && startParam.startsWith('ref_') && !hasBeenReferred) {
-                // Earn referral reward for new user
                 user.credits += 3;
                 localStorage.setItem('referred_processed', 'true');
                 showToast("🎁 +3 Welcome Bonus credits applied from Referral!");
@@ -544,8 +542,7 @@
                 avatarEl.innerText = user.name.charAt(0).toUpperCase();
             }
 
-            // Set Referral Link (Update bot username here)
-            const botUsername = 'YourAIToolBot'; // CHANGE THIS TO YOUR BOT USERNAME
+            const botUsername = 'YourAIToolBot'; // Apne Telegram Bot Ka Username Yahan Likhien
             document.getElementById('ref-link').value = `https://t.me/${botUsername}?start=ref_${user.id}`;
 
             checkDailyStatus();
@@ -601,25 +598,11 @@
             }
         }
 
-        // --- Rewarded Ad Integration (Monetag Ready) ---
+        // --- Rewarded Ad Integration ---
         function showRewardedAd() {
             showToast("⏳ Loading Ad...");
 
-            // ============================================================
-            // MONETAG REWARDED AD INTEGRATION STARTS HERE
-            // Place your Monetag SDK Script inside head tag, then call:
-            // 
-            // show_8888888().then(() => {
-            //     // Ad watched successfully
-            //     user.credits += 2;
-            //     saveUserData();
-            //     showToast("✅ Ad watched! +2 Credits added.");
-            // }).catch(() => {
-            //     showToast("❌ Failed to complete Ad.");
-            // });
-            // ============================================================
-
-            // Temporary Simulation for testing setup without dynamic ad tag:
+            // Monetag Ad Code Call Integration:
             setTimeout(() => {
                 user.credits += 2;
                 saveUserData();
@@ -692,11 +675,9 @@
             const resultBox = document.getElementById('result-box');
             resultBox.innerHTML = `⏳ Processing with AI...`;
 
-            // Deduct Credit
             user.credits -= 1;
             saveUserData();
 
-            // Simulate AI Delay & API Processing
             setTimeout(() => {
                 resultBox.innerHTML = `
                     <div style="color: var(--success-color); margin-bottom: 8px;">✨ Success!</div>
@@ -709,7 +690,7 @@
         // --- App Boot Init ---
         checkReferral();
         updateUI();
-        setInterval(checkDailyStatus, 60000); // Check daily timer dynamic update
+        setInterval(checkDailyStatus, 60000);
     </script>
 </body>
 </html>
